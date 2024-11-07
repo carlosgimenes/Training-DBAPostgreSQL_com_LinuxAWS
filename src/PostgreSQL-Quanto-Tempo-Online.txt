@@ -1,0 +1,5 @@
+#Verificando a quanto tempo está online
+SELECT date_trunc('second', current_timestamp -
+pg_postmaster_start_time()) as uptime;
+#Verificando quando o banco foi startado
+SELECT pg_postmaster_start_time();

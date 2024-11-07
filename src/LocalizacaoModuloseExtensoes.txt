@@ -1,0 +1,7 @@
+#ONDE FICAM OS ARQUIVOS DAS EXTENSÕES E MODULOS
+#CENTOS/FEDORA/RH
+/usr/pgsql-12/share/extension
+
+
+#DEBIAN/UBUNTU
+/usr/share/postgresql/12/extension

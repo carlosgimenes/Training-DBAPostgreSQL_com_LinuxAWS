@@ -1,0 +1,4 @@
+#Current database
+SELECT pg_database_size(current_database());
+#Todos os Databases
+SELECT sum(pg_database_size(datname)) from pg_database;

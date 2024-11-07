@@ -1,0 +1,3 @@
+Criando Database
+
+Link para documentação do comando: https://www.postgresql.org/docs/12/sql-createdatabase.html

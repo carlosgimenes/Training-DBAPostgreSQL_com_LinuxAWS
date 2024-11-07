@@ -1,0 +1,2 @@
+#Verificando os Utility process
+ps -ef | grep postgre

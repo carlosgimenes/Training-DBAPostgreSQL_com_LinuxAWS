@@ -1,0 +1,42 @@
+﻿#Atualizando o Sistema
+#Consulte o S.O Admin se você pode fazer isso e qual é o Impacto
+#Principalmente se o servidor está em produção
+#O Upgrade requer reboot
+sudo apt update
+sudo apt -y upgrade
+sudo shutdown -r now
+
+#ATUALIZE NOVAMENTE O apt
+sudo apt update
+
+#Adicione o Repositorio do PostgreSQL 12
+#Geralmente o Repositorio padrão do apt não está na versão que você deseja
+#IMPORTANTE SE ESTIVER NO DEBIAN ANTES DO COMANDO DE ADIÇÃO DA CHAVE A SEGUIR
+#EXECUTE O COMANDO: sudo apt -y install gnupg2
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+
+#Inclua o conteúdo do repositório no seu source do apt
+#O comando vai escrever no pgdg.list de onde ele vai trazer o software
+echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" |sudo tee  /etc/apt/sources.list.d/pgdg.list
+
+#Finalmente instale o postgresql12
+sudo apt update
+sudo apt -y install postgresql-12 postgresql-client postgresql-contrib
+
+#Teste o status do serviço
+sudo systemctl status postgresql.service
+sudo systemctl status postgresql@12-main.service 
+
+#Verifica se ele está habilitado para restart automático
+sudo systemctl is-enabled postgresql
+
+#verifica a conexão
+# você precisa estar com o user "postgres" esse user é um superadmin
+sudo su - postgres
+
+#conecte com o utilitário psql, pra quem usa oracle
+# é como se fosse o sqlplus
+psql
+
+#utiliza a função conninfo para trazer o status
+\conninfo

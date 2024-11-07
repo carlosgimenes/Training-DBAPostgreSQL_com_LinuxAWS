@@ -1,0 +1,24 @@
+#CRIANDO UMA PARTIÇÃO NO DISCO
+#CUIDADO: O COMANDO ABAIXO PODE DESTRUIR OS DADOS
+fdisk /dev/<CAMINHO-DO-DISCO>
+
+#LISTANDO AS PARTIÇÕES
+fdisk -l
+
+#FORMATANDO A PARTIÇÃO COM mkfs
+mkfs -t xfs /dev/xvdg1
+
+#CRIANDO O PONTO DE MONTAGEM
+mkdir -p /faststorage/tbserp1
+
+#MONTANDO A PARTIÇÃO
+mount -t xfs /dev/xvdg1 /faststorage/tbserp1
+
+#AJUSTE DE PERMISSÃO NO PONTO DE MONTAGEM
+chown postgres.postgres /faststorage/tbserp1
+
+#VERIFICANDO A PERMISSÃO
+ls -liart  /faststorage/
+
+#OBS: DEPOIS É PRECISO ADICIONAR O PONTO 
+#DE MONTAGEM NO /etc/fstab para ser permanente

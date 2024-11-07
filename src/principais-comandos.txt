@@ -1,0 +1,15 @@
+docker run --name db1 -h postgresrv01 -v data:/var/lib/postgresql/data -e POSTGRES_PASSWORD=password -d postgres
+docker container exec -it db1 psql -U postgres
+docker container exec -it db1 psql -U postgres
+docker ps -a
+docker stop <image-id>
+docker container exec -it db1 psql -U postgres
+docker start <image-id>
+docker container exec -it db1 psql -U postgres
+docker ps -a
+docker stop <image-id>
+docker volume ls
+docker rm -fv <image-id>
+docker ps -a
+docker volume ls
+docker run --name db1 -h postgresrv01 -p 5432:5432  -v data:/var/lib/postgresql/data -e POSTGRES_PASSWORD=password -d postgres

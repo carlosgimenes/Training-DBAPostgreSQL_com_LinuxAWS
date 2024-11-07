@@ -1,0 +1,5 @@
+#sem conectar no psql
+psql -l
+
+#Conectado no psql
+select * from pg_database;

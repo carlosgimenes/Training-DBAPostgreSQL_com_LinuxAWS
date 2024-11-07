@@ -1,0 +1,2 @@
+#docker container exec -it <container-name>  psql -U <username> -d geonames
+docker container exec -it pgserver  psql -U root -d geonames
