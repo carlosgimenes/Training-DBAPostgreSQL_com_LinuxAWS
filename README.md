@@ -1,4 +1,4 @@
-# Training LocalTreinamento - NomeDoTreinamento
+# Training Udemy - DBA PostgreSQL com Linux AWS CentOS, Red Hat, Debian
 
 ## Estrutura do Repositório
 
@@ -24,5 +24,6 @@
 │   ├── NomeArquivo5.pdf
 ├── LICENSE
 ├── README.md
+├── PostgreSQL-com-Linux-AWS.md
 ├── Training-NomeDoTreinamento.md
 └── learning_notes.md
