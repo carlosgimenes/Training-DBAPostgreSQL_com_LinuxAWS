@@ -566,3 +566,11 @@ By Arvind Toorpu, 2024-11-08
 ### **Página do artigo**: [Link para página do artigo](https://www.sqlservercentral.com/articles/step-by-step-guide-to-setup-postgresql-on-docker?utm_source=sqlservercentral&utm_medium=email&utm_campaign=newsletter-1761&utm_term=advocates&utm_content=advocates)
 
 ---
+
+## Componentes da Linguagem PL/SQL
+
+By Mayko Silva / 7 de Novembro de 2024
+
+### **Página do artigo**: [Link para página do artigo](https://maykosilva.com/blog/componentes-da-linguagem-pl-sql/?utm_campaign=2024-11-07&utm_content=educational&utm_medium=3556165&utm_source=email-sendgrid&utm_term=16407500)
+
+---
