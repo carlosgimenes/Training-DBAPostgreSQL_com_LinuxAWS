@@ -556,3 +556,13 @@ Esse guia descreve os passos necessários para criar um banco de dados PostgreSQ
   
 - **Backup e Recuperação**:
   - Lembre-se de incluir a nova tablespace nos seus planos de backup e recuperação para proteger os dados armazenados no disco específico.
+
+---
+
+## Step by step guide to setup PostgreSQL on Docker
+
+By Arvind Toorpu, 2024-11-08
+
+### **Página do artigo**: [Link para página do artigo](https://www.sqlservercentral.com/articles/step-by-step-guide-to-setup-postgresql-on-docker?utm_source=sqlservercentral&utm_medium=email&utm_campaign=newsletter-1761&utm_term=advocates&utm_content=advocates)
+
+---
