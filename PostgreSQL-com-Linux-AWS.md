@@ -574,3 +574,131 @@ By Mayko Silva / 7 de Novembro de 2024
 ### **Página do artigo**: [Link para página do artigo](https://maykosilva.com/blog/componentes-da-linguagem-pl-sql/?utm_campaign=2024-11-07&utm_content=educational&utm_medium=3556165&utm_source=email-sendgrid&utm_term=16407500)
 
 ---
+
+### **Configurando o PostgreSQL**
+
+#### **Onde encontrar as configurações do PostgreSQL Server**
+1. **View `pg_settings`:**
+   - A *view* `pg_settings` permite acessar e consultar informações detalhadas sobre as configurações do PostgreSQL.  
+   - Exibe:
+     - **default**: valor padrão do parâmetro.
+     - **file**: valor definido em um arquivo de configuração.
+     - **override**: valor alterado em tempo de execução ou em sessão.  
+   - **Exemplo de consulta:**  
+     ```bash
+     sudo su - postgres
+     psql
+     SELECT name, setting, source FROM pg_settings;
+     ```
+     - A saída lista todas as configurações, suas fontes e valores.  
+     - **Dica:** Pressione a barra de espaço para rolar a saída no terminal.
+
+2. **Comandos alternativos para consulta:**
+   - **Exibir todas as configurações com `SHOW`:**  
+     ```bash
+     sudo su - postgres
+     psql
+     SHOW ALL;
+     ```
+   - **Consultar configurações específicas:**  
+     ```bash
+     sudo su - postgres
+     psql
+     SHOW <parameter-name>;
+     ```
+
+#### **Por que usar `pg_settings` em vez do comando `SHOW` ou verificar diretamente os arquivos de configuração?**
+- O PostgreSQL pode ter várias fontes para suas configurações, e verificar apenas um arquivo pode não fornecer a visão completa.
+- Principais arquivos de configuração:
+  - **`postgresql.conf`:** Contém a maioria das configurações do servidor.
+    - Consultar localização:
+      ```sql
+      SHOW config_file;
+      ```
+  - **`pg_hba.conf`:** Define as regras de autenticação.
+    - Consultar localização:
+      ```sql
+      SHOW hba_file;
+      ```
+  - **`pg_ident.conf`:** Usado para mapear identidades de usuário.
+    - Consultar localização:
+      ```sql
+      SHOW ident_file;
+      ```
+- Usar `pg_settings` garante que todas as configurações, independentemente de onde estejam definidas, sejam acessadas de forma centralizada.
+
+---
+
+#### **Atualizando parâmetros no PostgreSQL**
+
+1. **Métodos de atualização:**
+   - **Editando arquivos diretamente:**
+     - Parâmetros são geralmente configurados nos arquivos:
+       - `postgresql.conf`
+       - `pg_hba.conf`
+       - `pg_ident.conf`
+   - **Usando comandos SQL:**
+     - Parâmetros dinâmicos podem ser alterados em tempo de execução com os comandos:
+       ```sql
+       ALTER SYSTEM SET <parameter-name> = '<value>';
+       ```
+       - Salva a configuração no arquivo `postgresql.auto.conf` (prioridade alta).
+     - Para alterar no nível da sessão ou transação:
+       ```sql
+       SET <parameter-name> = '<value>';
+       ```
+       - O efeito é temporário e dura apenas até o fim da sessão ou transação.
+
+2. **Reinicialização ou recarregamento do servidor:**
+   - **Parâmetros que exigem reinicialização:**
+     - Alguns parâmetros (como `shared_buffers`) só entram em vigor após reiniciar o servidor:
+       ```bash
+       sudo systemctl restart postgresql
+       ```
+   - **Parâmetros dinâmicos (sem reinicialização):**
+     - Após alteração nos arquivos, recarregue a configuração para que tenham efeito:
+       - Em CentOS/RHEL/Fedora:
+         ```bash
+         /usr/pgsql-12/bin/pg_ctl reload
+         ```
+       - Em Debian/Ubuntu:
+         ```bash
+         pg_ctlcluster 13 main reload
+         ```
+
+3. **Verificando alterações:**
+   - Após atualizar as configurações, você pode verificar os valores ativos:
+     ```sql
+     SELECT name, setting, source FROM pg_settings WHERE name = '<parameter-name>';
+     ```
+
+---
+
+#### **Outros conteúdos relevantes**
+
+1. **Hierarquia de Configuração no PostgreSQL:**
+   - Configurações podem ser definidas em diferentes níveis:
+     - **Sistema (arquivos):** `postgresql.conf`, `pg_hba.conf`.
+     - **Sessão:** Usando `SET` no nível da sessão.
+     - **Transação:** Usando `SET LOCAL` dentro de transações.
+   - Prioridade de aplicação (do mais específico para o mais geral):
+     - Sessão/Transação > `ALTER SYSTEM` > Arquivo `postgresql.conf`.
+
+2. **Monitoramento de Configurações Alteradas:**
+   - Você pode monitorar alterações de configurações usando a visão:
+     ```sql
+     SELECT name, setting, source, sourcefile, sourceline
+     FROM pg_settings
+     WHERE source != 'default';
+     ```
+
+3. **Dicas de boas práticas:**
+   - **Documente as alterações:** Sempre registre as mudanças feitas em arquivos de configuração para facilitar auditorias e recuperação.
+   - **Teste antes de aplicar:** Em ambientes críticos, aplique configurações primeiro em servidores de desenvolvimento para validar.
+   - **Automatize tarefas:** Considere usar ferramentas como *Ansible* para gerenciar alterações em servidores PostgreSQL.
+
+4. **Diferença entre `RELOAD` e reinicialização:**
+   - **RELOAD:** Recarrega configurações dinâmicas sem desconectar os clientes conectados.
+   - **Reinicialização:** Necessária para parâmetros críticos, como `max_connections`, que afetam a inicialização do servidor.
+
+---

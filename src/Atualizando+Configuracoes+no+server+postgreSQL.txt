@@ -1,0 +1,18 @@
+#Mostrando o parâmetro
+show work_mem;
+
+#Setando o parametro
+SET work_mem = '6MB';
+
+#Relendo o Arquivo postgresql.conf
+#no CentOS/Fedora/RH
+/usr/pgsql-12/bin/pg_ctl reload
+
+
+#Relendo o Arquivo postgresql.conf
+#no Debian/Ubuntu
+pg_ctlcluster <ative_version> main reload
+#No caso se a versão é 12 use:
+pg_ctlcluster 12 main reload
+
+
