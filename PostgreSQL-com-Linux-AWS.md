@@ -702,3 +702,317 @@ By Mayko Silva / 7 de Novembro de 2024
    - **Reinicialização:** Necessária para parâmetros críticos, como `max_connections`, que afetam a inicialização do servidor.
 
 ---
+
+### Atualização de Parâmetros no PostgreSQL
+
+No PostgreSQL, é possível ajustar parâmetros de configuração em diferentes níveis, permitindo flexibilidade na personalização de comportamentos específicos para usuários, bancos de dados ou até mesmo combinações de ambos. Isso é útil para atender requisitos específicos sem afetar configurações globais.
+
+---
+
+#### Níveis de Alteração de Parâmetros
+
+1. **Alteração para Todos os Usuários de um Banco de Dados**  
+   Use o comando `ALTER DATABASE` para definir um parâmetro que afetará **todos os usuários** conectados ao banco de dados especificado.  
+   **Comando**:  
+   ```sql
+   ALTER DATABASE NomeDatabase SET <parametro> = 'valor';
+   ```  
+   **Exemplo**:  
+   Configure o parâmetro `work_mem` para 4MB para todos os usuários conectados ao banco de dados `erpdb`:  
+   ```sql
+   ALTER DATABASE erpdb SET work_mem = '4MB';
+   ```
+
+---
+
+2. **Alteração para um Usuário em Todos os Bancos de Dados**  
+   Use o comando `ALTER ROLE` para definir um parâmetro para **um usuário específico**, independentemente do banco de dados ao qual ele esteja conectado.  
+   **Comando**:  
+   ```sql
+   ALTER ROLE NomeUsuario SET <parametro> = 'valor';
+   ```  
+   **Exemplo**:  
+   Configure o parâmetro `statement_timeout` para 30 segundos para o usuário `report_user`:  
+   ```sql
+   ALTER ROLE report_user SET statement_timeout = '30s';
+   ```
+
+---
+
+3. **Alteração para um Usuário em um Banco de Dados Específico**  
+   Para configurar um parâmetro de forma mais granular, apenas para um usuário quando conectado a um banco de dados específico, use `ALTER ROLE ... IN DATABASE`.  
+   **Comando**:  
+   ```sql
+   ALTER ROLE NomeUsuario IN DATABASE NomeDatabase SET <parametro> = 'valor';
+   ```  
+   **Exemplo**:  
+   Configure o parâmetro `search_path` para o schema `finance` apenas para o usuário `finance_user` no banco de dados `finance_db`:  
+   ```sql
+   ALTER ROLE finance_user IN DATABASE finance_db SET search_path = 'finance';
+   ```
+
+---
+
+#### Observações Importantes:
+
+- **Precedência de Configuração**:  
+  O PostgreSQL segue uma hierarquia de precedência para aplicar os parâmetros:  
+  - **Configurações de Sessão (SET)**: Têm precedência mais alta e afetam apenas a sessão atual.  
+  - **Configurações de Role ou Banco de Dados**: Aplicadas automaticamente quando um usuário ou banco de dados é carregado.  
+  - **Configurações Globais (postgresql.conf)**: Têm precedência mais baixa.
+
+- **Impacto Imediato**:  
+  - Algumas alterações entram em vigor imediatamente após o comando ser executado.  
+  - Para alterações que dependem de reinício, certifique-se de comunicar os usuários e planejar uma janela de manutenção.
+
+- **Verificação de Configurações**:  
+  Para verificar se as alterações foram aplicadas corretamente, utilize:  
+  ```sql
+  SHOW <parametro>;
+  ```
+  Ou consulte a `pg_settings` para informações detalhadas:  
+  ```sql
+  SELECT name, setting, source FROM pg_settings WHERE name = '<parametro>';
+  ```
+
+---
+
+#### Dicas para Gerenciamento de Configurações:
+
+- **Use Configurações Granulares com Moderação**:  
+  Configurações específicas para usuários e bancos de dados devem ser bem documentadas para evitar confusões futuras.
+
+- **Mantenha a Documentação Atualizada**:  
+  Registre todas as alterações feitas em um repositório central ou documento para facilitar auditorias e manutenções.
+
+- **Teste Antes de Aplicar em Produção**:  
+  Sempre teste configurações em um ambiente de desenvolvimento ou homologação antes de aplicá-las em produção.
+
+---
+
+### Gestão de Privilégios com User Groups e Schemas
+
+A gestão de privilégios no PostgreSQL é baseada no uso de **Roles** e **Schemas**, permitindo um controle granular sobre permissões e acesso aos objetos do banco de dados. Roles no PostgreSQL podem atuar como **usuários** (roles com login) ou **grupos** (roles sem login que servem para agrupar permissões).
+
+---
+
+#### Conceitos Fundamentais
+
+1. **Roles como Sinônimos de Usuários**:  
+   - No PostgreSQL, o conceito de "Usuário" é tratado como uma **Role** com permissão de login (atributo `LOGIN`).  
+   - Cada **Usuário** é uma Role que possui a capacidade de autenticar e acessar o servidor do banco de dados.
+
+2. **Identificador Interno (sysid)**:  
+   - Quando um usuário é criado no PostgreSQL, ele recebe um **identificador interno** exclusivo, conhecido como `sysid` (**User System ID**).  
+   - O `sysid` é usado para associar os objetos do banco de dados ao seu **Owner**.
+
+3. **Direitos Globais (Global Rights)**:  
+   - Roles podem ter permissões globais, como:
+     - **Criar bancos de dados** (`CREATEDB`).  
+     - **Superusuário** (`SUPERUSER`), com permissões ilimitadas.  
+
+---
+
+#### Criando Usuários no PostgreSQL
+
+Existem duas formas principais de criar usuários:
+
+1. **Comando SQL** (recomendado para controle em scripts ou auditorias):  
+   Utilize o comando `CREATE USER` no nível do SQL:  
+   **Exemplo**:  
+   ```bash
+   sudo su - postgres
+   psql
+   ```
+   ```sql
+   CREATE USER name WITH PASSWORD 'Minh@Senh@123';
+   ```
+
+2. **Modo Interativo** (ideal para criação manual rápida):  
+   Use o script `createuser` fornecido pelo PostgreSQL no sistema operacional:  
+   ```bash
+   createuser --interactive
+   ```
+   Este comando interativo perguntará sobre as permissões que devem ser atribuídas ao usuário.
+
+---
+
+#### Listando Usuários Existentes
+
+1. **Usando o Comando Meta `\du` no psql**:  
+   ```bash
+   sudo su - postgres
+   psql
+   \du
+   ```
+   Isso exibirá uma tabela contendo:
+   - Nome do usuário.  
+   - Atributos (como `SUPERUSER`, `CREATEDB`).  
+   - Membros de outras Roles.
+
+2. **Consultando a Tabela `pg_user`**:  
+   ```bash
+   sudo su - postgres
+   psql
+   SELECT * FROM pg_user;
+   ```
+   A tabela `pg_user` exibe detalhes sobre usuários, incluindo permissões de login e privilégios.
+
+---
+
+#### Melhorando a Gestão com User Groups
+
+**Roles Sem Login (User Groups)**:  
+- Roles também podem ser usadas como **grupos** para agrupar permissões.  
+- Isso simplifica a gestão de privilégios, especialmente em sistemas com muitos usuários.  
+
+**Criando uma Role de Grupo**:  
+```sql
+CREATE ROLE developers NOLOGIN;
+```
+
+**Adicionando Usuários ao Grupo**:  
+```sql
+GRANT developers TO user1, user2;
+```
+
+**Concedendo Permissões ao Grupo**:  
+```sql
+GRANT SELECT, INSERT ON ALL TABLES IN SCHEMA public TO developers;
+```
+
+---
+
+#### Práticas Recomendadas para Gestão de Privilégios
+
+1. **Utilize Roles para Agrupamento**:  
+   - Atribua permissões a grupos de usuários, e não diretamente aos usuários individuais, para facilitar a administração.
+
+2. **Controle de Privilégios por Schema**:  
+   - Conceda permissões no nível do **schema** para organizar melhor os objetos do banco de dados.  
+   - Exemplo:
+     ```sql
+     GRANT USAGE ON SCHEMA analytics TO analysts;
+     GRANT SELECT ON ALL TABLES IN SCHEMA analytics TO analysts;
+     ```
+
+3. **Auditoria Regular de Permissões**:  
+   - Liste regularmente as roles e privilégios para identificar possíveis falhas de segurança:  
+     ```sql
+     SELECT grantee, privilege_type, table_schema, table_name 
+     FROM information_schema.role_table_grants;
+     ```
+
+4. **Documente Alterações em Privilégios**:  
+   - Registre alterações feitas nas roles e privilégios para facilitar auditorias futuras.
+
+---
+
+#### Links de Referência
+
+- [Documentação Oficial do PostgreSQL - CREATE USER](https://www.postgresql.org/docs/current/sql-createuser.html)
+
+---
+
+## Paralelo entre PostgreSQL, Oracle e SQL Server no que diz respeito à Gestão de Privilégios, destacando as principais diferenças entre os três sistemas de gerenciamento de banco de dados
+
+### **1. PostgreSQL**
+
+- **Modelo de Privilégios**:
+  - Baseado em **Roles**, que podem atuar como usuários (com login) ou como grupos (sem login).
+  - Privilégios podem ser atribuídos a **Schemas**, **Tabelas**, **Funções**, **Sequences**, etc.
+  - Possui controle granular com o comando `GRANT` e uso de schemas para organização de objetos.
+  
+- **Estrutura de Usuários**:
+  - Roles são abstratas, mas podem ser associadas a login (`LOGIN`) ou não (`NOLOGIN`).
+  - Agrupamento de usuários é feito através de roles que atuam como **grupos**.
+
+- **Privilégios Hierárquicos**:
+  - Não existe um equivalente direto a **Database Owners** como no SQL Server.  
+  - Superusuários (`SUPERUSER`) têm permissões globais.
+
+- **Criação e Concessão de Privilégios**:
+  - Exemplo:
+    ```sql
+    CREATE ROLE developer NOLOGIN;
+    GRANT SELECT, INSERT ON ALL TABLES IN SCHEMA public TO developer;
+    GRANT developer TO user1;
+    ```
+
+---
+
+### **2. Oracle Database**
+
+- **Modelo de Privilégios**:
+  - Baseado em **Usuários** e **Roles** (semântica similar ao PostgreSQL, mas com diferenças de implementação).
+  - Privilégios são classificados em:
+    - **Privilégios do Sistema**: Ações gerais, como criar tabelas ou bancos de dados (`CREATE TABLE`).
+    - **Privilégios de Objeto**: Permissões sobre objetos específicos (`SELECT`, `UPDATE`, etc.).
+
+- **Estrutura de Usuários**:
+  - Cada **Usuário** no Oracle possui seu próprio **esquema** por padrão.  
+  - Esquemas são sempre associados diretamente ao usuário (não são compartilháveis como no PostgreSQL).
+
+- **Privilégios Hierárquicos**:
+  - Pode-se criar hierarquias de **roles** e conceder privilégios de maneira centralizada.
+  - Exemplo:
+    ```sql
+    CREATE ROLE developer_role;
+    GRANT CREATE TABLE, SELECT ON schema.table TO developer_role;
+    GRANT developer_role TO user1;
+    ```
+
+- **Diferenciais do Oracle**:
+  - Oferece **Fine-Grained Access Control** (FGAC) para definir políticas de acesso baseadas em condições específicas.
+  - Integração com **Virtual Private Database (VPD)** para limitar acesso dinamicamente.
+
+---
+
+### **3. SQL Server**
+
+- **Modelo de Privilégios**:
+  - Baseado em **Logins** e **Usuários**:
+    - **Logins**: Para autenticação no nível do servidor.
+    - **Usuários**: Para acesso no nível do banco de dados.
+  - Privilégios são atribuídos a **Roles Fixas** ou customizadas.
+
+- **Estrutura de Usuários**:
+  - Usuários no banco de dados são associados a logins do servidor.  
+  - Uso extensivo de **Database Roles** e **Server Roles**:
+    - **Server Roles**: `sysadmin`, `dbcreator`, etc.
+    - **Database Roles**: `db_owner`, `db_datareader`, `db_datawriter`, etc.
+
+- **Privilégios Hierárquicos**:
+  - Hierarquia mais definida, com papéis fixos cobrindo a maioria dos cenários comuns.
+  - Exemplo:
+    ```sql
+    CREATE ROLE developer_role;
+    GRANT SELECT, INSERT ON schema.table TO developer_role;
+    ALTER ROLE developer_role ADD MEMBER user1;
+    ```
+
+- **Diferenciais do SQL Server**:
+  - Gerenciamento robusto de permissões por meio do **SQL Server Management Studio (SSMS)**.
+  - **Permission Inheritance**: Roles herdam privilégios de outras roles associadas.
+
+---
+
+### **Comparativo Geral**
+
+| **Aspecto**                     | **PostgreSQL**                          | **Oracle**                              | **SQL Server**                          |
+|----------------------------------|-----------------------------------------|-----------------------------------------|-----------------------------------------|
+| **Estrutura de Usuários**        | Baseada em Roles (Login e NOLOGIN)      | Baseada em Usuários (1 usuário = 1 schema) | Baseada em Logins e Usuários            |
+| **Organização de Schemas**       | Compartilhados entre usuários           | Cada usuário tem seu próprio schema     | Compartilhados entre usuários           |
+| **Hierarquia de Privilégios**    | Roles e Superusuários                   | Usuários, Roles e FGAC                  | Server Roles e Database Roles           |
+| **Privilégios Granulares**       | Controle detalhado com `GRANT`          | Privilégios de Sistema e Objeto         | Controle centralizado por SSMS ou T-SQL |
+| **Diferencial**                  | Simplicidade e flexibilidade            | FGAC e integração com VPD               | Hierarquia clara e ferramentas GUI      |
+
+---
+
+### **Considerações Finais**
+
+- **PostgreSQL**: Ótimo para ambientes que requerem flexibilidade no gerenciamento de privilégios, especialmente em sistemas que utilizam schemas compartilhados.  
+- **Oracle**: Ideal para ambientes corporativos com demandas avançadas de controle de acesso, como políticas de segurança baseadas em condições.  
+- **SQL Server**: Excelente para gerenciamento em níveis hierárquicos bem definidos, com suporte robusto a ferramentas gráficas e scripts de administração.
+
+---

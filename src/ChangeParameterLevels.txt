@@ -1,0 +1,13 @@
+#Todos usuários em um banco de dados, por exemplo DB1
+ALTER DATABASE
+SET <configuration_parameter> = valor_parametro;
+
+#Um usuário em qualquer banco de dados do meu Database Server
+ALTER ROLE joao 
+SET <configuration_parameter> = valor_parametro;
+
+#Um usuário específico, mas somente quando conectado em um banco específico
+#por exemplo DB1
+ALTER ROLE joao
+IN DATABASE DB1
+SET <configuration_parameter> = valor_parametro;
