@@ -206,7 +206,7 @@ sudo apt -y install postgresql-16 postgresql-client-16 postgresql-contrib
   \conninfo
   ```
 
-  Você deve ter um retorno como: 
+  Você deve ter um retorno como:
   
   ```text
   You are connected to database "postgres" as user "postgres" via socket in "/var/run/postgresql" at port "5432".
@@ -227,10 +227,10 @@ Este arquivo controla as configurações gerais do PostgreSQL, incluindo a forma
 - Abra o arquivo de configuração:
 
   ```bash
-  sudo nano /etc/postgresql/12/main/postgresql.conf
+  sudo nano /etc/postgresql/16/main/postgresql.conf
   ```
 
-  (Substitua `12` pela versão do PostgreSQL instalada, caso seja diferente).
+  (Substitua `16` pela versão do PostgreSQL instalada, caso seja diferente).
 
 - Procure pela linha que define o parâmetro `listen_addresses`:
   
