@@ -255,7 +255,7 @@ Este arquivo define as regras de autenticação de clientes.
 - Abra o arquivo:
   
   ```bash
-  sudo nano /etc/postgresql/12/main/pg_hba.conf
+  sudo nano /etc/postgresql/16/main/pg_hba.conf
   ```
 
 - Adicione uma linha para permitir conexões externas. Por exemplo:
