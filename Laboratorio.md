@@ -188,7 +188,7 @@ sudo apt -y install postgresql-16 postgresql-client-16 postgresql-contrib
   Você deve ter um retorno como `enabled`
 
 - **Faça uma primeira conexão com o PostgreSQL**:
-  Você precisa estar com o user "postgres" esse user é um superadmin:
+  Você precisa estar com o user `postgres` esse user é um superadmin:
 
   ```bash
   sudo su - postgres
