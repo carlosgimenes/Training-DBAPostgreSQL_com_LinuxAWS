@@ -123,6 +123,7 @@ sudo apt -y install postgresql-16 postgresql-client-16 postgresql-contrib
 ```
 
 ### Análise do comando
+
 1. **`sudo`**:
    - Significa *super user do* e é usado para executar o comando com privilégios administrativos. Isso é necessário porque a instalação de pacotes no sistema exige permissões elevadas.
 
@@ -162,7 +163,7 @@ sudo apt -y install postgresql-16 postgresql-client-16 postgresql-contrib
    sudo -i -u postgres psql
    ```
 
-### Passos adicionais recomendados:
+### Passos adicionais recomendados
 
 - **Alterar a senha do usuário `postgres`**:
   Após entrar no `psql`, execute:
@@ -210,7 +211,129 @@ sudo apt -y install postgresql-16 postgresql-client-16 postgresql-contrib
   ```text
   You are connected to database "postgres" as user "postgres" via socket in "/var/run/postgresql" at port "5432".
   ```
+
+### Permitindo acesso através de uma conexão externa ao servidor do PostgreSQL
+
+Para permitir acesso externo ao PostgreSQL, é necessário ajustar algumas configurações no servidor. Por padrão, o PostgreSQL permite conexões apenas a partir do próprio servidor (localhost). Para liberar acesso externo, vamos precisar modificar alguns arquivos e ajustar a configuração da rede.
+
+Aqui está o passo a passo:
+
+---
+
+#### 1. **Editar o arquivo `postgresql.conf`**
+
+Este arquivo controla as configurações gerais do PostgreSQL, incluindo a forma como ele escuta conexões.
+
+- Abra o arquivo de configuração:
+
+  ```bash
+  sudo nano /etc/postgresql/12/main/postgresql.conf
+  ```
+
+  (Substitua `12` pela versão do PostgreSQL instalada, caso seja diferente).
+
+- Procure pela linha que define o parâmetro `listen_addresses`:
   
+  ```conf
+  #listen_addresses = 'localhost'
+  ```
+
+- Altere-a para incluir o endereço IP do servidor ou para `'*'` (para escutar em todos os IPs disponíveis):
+
+  ```conf
+  listen_addresses = '*'
+  ```
+
+- Salve e saia do editor (`Ctrl+O`, `Enter`, `Ctrl+X` no Nano).
+
+---
+
+#### 2. **Editar o arquivo `pg_hba.conf`**
+
+Este arquivo define as regras de autenticação de clientes.
+
+- Abra o arquivo:
+  
+  ```bash
+  sudo nano /etc/postgresql/12/main/pg_hba.conf
+  ```
+
+- Adicione uma linha para permitir conexões externas. Por exemplo:
+  
+  ```conf
+  host    all             all             0.0.0.0/0            md5
+  ```
+  
+  Aqui está o que cada campo significa:
+  - **`host`**: Permite conexões via TCP/IP.
+  - **`all`** (primeiro): Refere-se ao banco de dados ao qual o acesso é permitido. Use `all` para permitir acesso a todos os bancos.
+  - **`all`** (segundo): Refere-se aos usuários permitidos. Use `all` para permitir a qualquer usuário autenticado.
+  - **`0.0.0.0/0`**: Permite conexões de qualquer endereço IP. Você pode restringir isso a um intervalo de IPs, como `192.168.1.0/24`.
+  - **`md5`**: Especifica o método de autenticação. Aqui estamos usando a autenticação com senha criptografada.
+
+- Salve e saia do editor.
+
+---
+
+#### 3. **Reiniciar o PostgreSQL**
+
+Após as alterações, reinicie o serviço PostgreSQL para aplicar as mudanças:
+
+```bash
+sudo systemctl restart postgresql
+```
+
+---
+
+#### 4. **Configurar o firewall**
+
+Se houver um firewall ativo no servidor, precisaremos liberar a porta padrão do PostgreSQL (5432) para conexões externas.
+
+- No Ubuntu, usando `ufw`:
+  
+  ```bash
+  sudo ufw allow 5432/tcp
+  ```
+
+- Verifique as regras do firewall para garantir que a porta esteja liberada:
+
+  ```bash
+  sudo ufw status
+  ```
+
+---
+
+#### 5. **Testar a conexão**
+
+Agora, de outro computador, podemos tentar se conectar ao PostgreSQL usando o cliente `psql` ou uma ferramenta como DBeaver, pgAdmin, ou outro. Certifique-se de usar o IP do servidor PostgreSQL e a porta correta.
+
+Exemplo de conexão com `psql`:
+
+```bash
+psql -h <IP_do_servidor> -p 5432 -U <usuário> -d <nome_do_banco>
+```
+
+---
+
+#### Dicas de segurança
+
+1. **Restringir acesso por IP**:
+   Em vez de permitir conexões de `0.0.0.0/0`, limite as conexões a IPs específicos ou faixas conhecidas.
+
+2. **Usar métodos de autenticação seguros**:
+   O método `md5` é seguro para senhas criptografadas, mas considere autenticação com certificados ou métodos mais seguros, dependendo do cenário.
+
+3. **Monitorar logs de acesso**:
+   Verifique os logs para monitorar conexões externas suspeitas
+
+   ```bash
+   sudo tail -f /var/log/postgresql/postgresql-16-main.log
+   ```
+
+Seguindo esses passos, teremos o PostgreSQL configurado para aceitar conexões externas de forma segura!
+
+---
+
 Pronto já temos o PostgreSQL rodando e pronto para realização do nosso Laboratório, bons estudos.
 
 ---
