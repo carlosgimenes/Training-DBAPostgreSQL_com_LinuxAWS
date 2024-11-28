@@ -2,7 +2,7 @@
 
 ## Montagem Laboratório de Estudo
 
-### Host Linux Ubuntu Server 24.04.1 LTS
+### Host Linux Ubuntu Server 24.04.1 LTS em VM VirtualBox
 
 A partir do meu Grupo de Templates do VirtualBox, clonar **LAB-xxx-SRV01**.
 
@@ -337,3 +337,8 @@ Seguindo esses passos, teremos o PostgreSQL configurado para aceitar conexões e
 Pronto já temos o PostgreSQL rodando e pronto para realização do nosso Laboratório, bons estudos.
 
 ---
+
+### Host Linux Ubuntu Server 24.04.1 LTS em Container Docker
+
+[Página Docker Hub para imagem PostgreSQL](https://hub.docker.com/_/postgres)
+
